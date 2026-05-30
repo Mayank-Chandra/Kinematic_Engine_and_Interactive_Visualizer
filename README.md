@@ -1,7 +1,7 @@
 # Dual-Track Kinematics Engine & Dynamic Visualizer Framework
 An academic-grade serialization package implementing forward kinematics solvers, spatial $SO(3)$ manifold conversions with singularity handling, hyperspherical trajectory interpolation (SLERP), and real-time wireframe state space visualization.
 
-![Live Workspace Trajectory Demo](demo.gif)
+![Live Workspace Trajectory Demo](Python/demo.gif)
 
 ---
 
