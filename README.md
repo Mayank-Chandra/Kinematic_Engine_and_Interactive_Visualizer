@@ -1,8 +1,8 @@
 # Dual-Track Kinematics Engine & Dynamic Visualizer Framework
 An academic-grade serialization package implementing forward kinematics solvers, spatial $SO(3)$ manifold conversions with singularity handling, hyperspherical trajectory interpolation (SLERP), and real-time wireframe state space visualization.
-
+<p>
 <img src="Python/demo.gif" width="600" alt="Robot Workspace Trajectory Demo">
-
+</p>
 ---
 
 ## 1. Project Overview & Academic Value
@@ -58,25 +58,27 @@ $$T_n^0(q) = \prod_{i=1}^{n} T_i^{i-1}(q_i) = T_1^0(q_1) \cdot T_2^1(q_2) \dots 
 The project codebase is organized into cleanly separated functional modules, keeping custom low-level mathematical structures independent of high-level visualizers and external engineering toolboxes:
 
 ```text
-robotics_portfolio/
-│
-├── README.md                  # Academic landing page & technical brief
-│
-├── matlab_toolbox/            # Fast-track track using commercial toolbox tools
-│   ├── transform_toolbox_demo.m   # Validation of rotation conversions
-│   ├── slerp_toolbox_demo.m       # Trajectory tracking time sweeps
-│   ├── fk_toolbox_demo.m          # RigidBodyTree compilation and mapping
-│   └── interactive_visualizer.m   # Live UI window slider polling dashboard
-│
-└── python_scratch/            # Core algorithmic track engineered from first principles
-    ├── demo.gif               # Auto-playing visualization timelapse
-    ├── generate_animation.py  # Script compiling sinusoidal wave paths into the demo gif
-    ├── test_milestone1.py     # Boundary testing for matrix transformations
-    ├── test_milestone2.py     # Mathematical checks for SLERP midpoint logic
-    ├── test_milestone3.py     # High-precision validation for Forward Kinematics
-    ├── visualizer.py          # Interactive Matplotlib wireframe visualizer app
-    │
-    └── kinematics/            # Reusable underlying linear algebra matrix package
-        ├── __init__.py        # Exposes core package classes
-        ├── chain.py           # Multi-body joint-space analytical solver loops
-        └── transforms.py      # Core spatial geometry equations & singularity guards
+Kinematic_Engine_and_Interactive_Visualizer/
+|----- core
+|        |------ kinematics.m
+|        |------ spatial_math.m
+|
+|------ Python
+|            |------ Kinematics
+|            |            |------ __init__.py
+|            |            |------ chain.py
+|            |            |------ transform.py      
+|            |------ test
+|            |        |------ test1.py
+|            |        |------ test2.py
+|            |        |------ test3.py                              
+|            |------ GUI_gif.py
+|            |------ demo.gif
+|            |------ visualizer.py
+|            
+|
+|------ fk_toolbox.m
+|------ interactive_visualizer.m
+|------ slerp_toolbox.m
+|------ transform_toolbox.m
+|------ ur5_parameters.m
