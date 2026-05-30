@@ -69,11 +69,15 @@ Kinematic_Engine_and_Interactive_Visualizer/
 |            |------ Kinematics
 |            |            |------ __init__.py
 |            |            |------ chain.py
-|            |            |------ transform.py      
+|            |            |------ transform.py
+|            |
+|            |           
 |            |------ test
 |            |        |------ test1.py
 |            |        |------ test2.py
-|            |        |------ test3.py                              
+|            |        |------ test3.py
+|            |
+|            |                
 |            |------ GUI_gif.py
 |            |------ demo.gif
 |            |------ visualizer.py
