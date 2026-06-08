@@ -72,7 +72,7 @@ The engine constructs the $3 \times 3$ Jacobian by calculating partial derivativ
 
 2. Damped Least-Squares (DLS) & Singularity RobustnessStandard pseudo-inverse solvers fail at workspace boundaries where $J$ becomes singular, causing infinite joint velocity commands. This implementation employs Damped Least-Squares (DLS) to regularize the inversion:
                                                 
-                                               $$ J^* = J^T (J J^T + \lambda^2 I)^{-1} $$
+                                               $$ \mathbf{J}^* = \mathbf{J}^T (\mathbf{J} \mathbf{J}^T + \lambda^2 \mathbf{I})^{-1} $$
 3. Trajectory Tracking via Warm-Starting:
 For continuous path integration (e.g., circular trajectories), the engine utilizes Warm-Starting. Instead of initializing the solver from a blind guess at every time step, we use the joint configuration $q_{k-1}$ from the previous frame as the initial seed for frame $q_k$
 
