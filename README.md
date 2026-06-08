@@ -56,6 +56,23 @@ $$T_n^0(q) = \prod_{i=1}^{n} T_i^{i-1}(q_i) = T_1^0(q_1) \cdot T_2^1(q_2) \dots 
 
 ---
 
+### D. Inverse Kinematics and Numerical Optimization
+To resolve the end-effector position $\mathbf{x} \in \mathbb{R}^3$ for a given target pose, this engine utilizes iterative numerical optimization rather than closed-form geometric solutions, allowing for flexible linkage configurations.
+
+1. Jacobian Velocity MappingThe relationship between joint velocities $\dot{q}$ and end-effector velocities $v$ is governed by the Analytical Jacobian $J(q)$: $$v = J(q) \dot{q}$$
+
+The engine constructs the $3 \times 3$ Jacobian by calculating partial derivatives of the forward kinematics chain, ensuring the mapping accounts for the specific link lengths $a_i$ and joint configurations.
+
+2. Damped Least-Squares (DLS) & Singularity RobustnessStandard pseudo-inverse solvers fail at workspace boundaries where $J$ becomes singular, causing infinite joint velocity commands. This implementation employs Damped Least-Squares (DLS) to regularize the inversion:
+                                                
+                                                $$J^* = J^T (J J^T + \lambda^2 I)^{-1}$$
+3. Trajectory Tracking via Warm-Starting:
+For continuous path integration (e.g., circular trajectories), the engine utilizes Warm-Starting. Instead of initializing the solver from a blind guess at every time step, we use the joint configuration $q_{k-1}$ from the previous frame as the initial seed for frame $q_k$
+
+   *  Efficiency : This reduces convergence iterations per step to $O(1)$ in smooth trajectory regions.
+   * Continuity: Ensures smooth, non-oscillatory joint trajectories suitable for real-world automation hardware.
+
+
 ## 3. Repository Architecture & Directory Mapping
 The project codebase is organized into cleanly separated functional modules, keeping custom low-level mathematical structures independent of high-level visualizers and external engineering toolboxes:
 
@@ -88,3 +105,6 @@ Kinematic_Engine_and_Interactive_Visualizer/
 |------ slerp_toolbox.m
 |------ transform_toolbox.m
 |------ ur5_parameters.m
+|------ dls.m
+|------ ik_toolbox.m
+|------ jacobian_toolbox.m
