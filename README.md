@@ -48,7 +48,14 @@ Where $\cos\Omega = q_0 \cdot q_1$.
 ### C. Kinematic Chains (Standard Denavit-Hartenberg)
 Multi-body linkage transformation maps are parameterized sequentially using four parameters: link length $a_i$, link twist $\alpha_i$, link offset $d_i$, and joint angle $\theta_i$. The homogeneous local jump transformation matrix $T_i^{i-1}$ is evaluated as:
 
-$$T_i^{i-1} = \begin{bmatrix} \cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\ \sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\ 0 & \sin\alpha_i & \cos\alpha_i & d_i \\ 0 & 0 & 0 & 1 \end{bmatrix}$$
+$$
+T_i^{i-1} = \begin{bmatrix}
+\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
+\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
+0 & \sin\alpha_i & \cos\alpha_i & d_i \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
 
 The complete forward kinematics solution mapping the joint vector space configuration to the end-effector pose relative to the fixed ground origin is evaluated via post-multiplied transformation matrix chaining:
 
@@ -65,7 +72,7 @@ The engine constructs the $3 \times 3$ Jacobian by calculating partial derivativ
 
 2. Damped Least-Squares (DLS) & Singularity RobustnessStandard pseudo-inverse solvers fail at workspace boundaries where $J$ becomes singular, causing infinite joint velocity commands. This implementation employs Damped Least-Squares (DLS) to regularize the inversion:
                                                 
-                                                $$J^* = J^T (J J^T + \lambda^2 I)^{-1}$$
+                                               $$ J^* = J^T (J J^T + \lambda^2 I)^{-1} $$
 3. Trajectory Tracking via Warm-Starting:
 For continuous path integration (e.g., circular trajectories), the engine utilizes Warm-Starting. Instead of initializing the solver from a blind guess at every time step, we use the joint configuration $q_{k-1}$ from the previous frame as the initial seed for frame $q_k$
 
