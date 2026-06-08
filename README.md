@@ -71,11 +71,10 @@ To resolve the end-effector position $\mathbf{x} \in \mathbb{R}^3$ for a given t
 The engine constructs the $3 \times 3$ Jacobian by calculating partial derivatives of the forward kinematics chain, ensuring the mapping accounts for the specific link lengths $a_i$ and joint configurations.
 
 2. Damped Least-Squares (DLS) & Singularity RobustnessStandard pseudo-inverse solvers fail at workspace boundaries where $J$ becomes singular, causing infinite joint velocity commands. This implementation employs Damped Least-Squares (DLS) to regularize the inversion:
+$$
+\mathbf{J}^* = \mathbf{J}^T (\mathbf{J} \mathbf{J}^T + \lambda^2 \mathbf{I})^{-1}
+$$
                                                 
-                        <p align="center">
-  <b>J* = J<sup>T</sup> (J J<sup>T</sup> + λ<sup>2</sup> I)<sup>-1</sup></b>
-</p>
-
 3. Trajectory Tracking via Warm-Starting:
 For continuous path integration (e.g., circular trajectories), the engine utilizes Warm-Starting. Instead of initializing the solver from a blind guess at every time step, we use the joint configuration $q_{k-1}$ from the previous frame as the initial seed for frame $q_k$
 
