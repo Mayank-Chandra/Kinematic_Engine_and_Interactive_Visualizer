@@ -2,70 +2,111 @@ import numpy as np
 import numpy.typing as npt
 from typing import List, Dict
 
+
 class DHTableSolver:
-    def __init__(self, dh_param: List[Dict[str, float]]):
-        'Initialize serial link chain parsing a list of geometric parameter dictionaries'
-        self.dh_param = dh_param
-        self.num_joints = len(dh_param)
+
+    def __init__(self, dh_params: List[Dict[str, float]]):
+        """Initialize a serial-link chain from a list of DH parameter dicts.
+
+        Each dict must contain keys: 'a', 'd', 'alpha'.
+        Optional key: 'theta_offset' (default 0.0) for non-zero joint zero positions.
+
+        Example (3-DOF planar, unit links):
+            dh_params = [
+                {'a': 1.0, 'd': 0.0, 'alpha': 0.0},
+                {'a': 1.0, 'd': 0.0, 'alpha': 0.0},
+                {'a': 1.0, 'd': 0.0, 'alpha': 0.0},
+            ]
+        """
+        required = {'a', 'd', 'alpha'}
+        for i, p in enumerate(dh_params):
+            missing = required - p.keys()
+            if missing:
+                raise ValueError(f"DH parameter dict at index {i} is missing keys: {missing}")
+        self.dh_params = dh_params
+        self.num_joints = len(dh_params)
+
+    def _validate_joint_angles(self, joint_angles: npt.NDArray[np.float64]) -> None:
+        """Raise if joint_angles length does not match the chain."""
+        if len(joint_angles) != self.num_joints:
+            raise ValueError(
+                f"Expected {self.num_joints} joint angles, got {len(joint_angles)}"
+            )
 
     @staticmethod
-    def compute_dh_matrix(theta: float, d: float, a: float, alpha: float) -> npt.NDArray[np.float64]:
-        'Compute a Standard 4x4 DH homogenous Transformation Matrix'
-        ct = np.cos(theta)
-        st = np.sin(theta)
-        ca = np.cos(alpha)
-        sa = np.sin(alpha)
-
+    def compute_dh_matrix(
+        theta: float,
+        d: float,
+        a: float,
+        alpha: float
+    ) -> npt.NDArray[np.float64]:
+        """Compute the standard 4x4 DH homogeneous transformation matrix T_i^{i-1}."""
+        ct, st = np.cos(theta), np.sin(theta)
+        ca, sa = np.cos(alpha), np.sin(alpha)
         return np.array([
-            [ct, -st*ca,  st*sa, a*ct],
-            [st,  ct*ca, -ct*sa, a*st],
-            [0.0, sa,     ca,    d],
-            [0.0, 0.0,    0.0,   1.0]
+            [ct, -st * ca,  st * sa, a * ct],
+            [st,  ct * ca, -ct * sa, a * st],
+            [0.0, sa,       ca,      d     ],
+            [0.0, 0.0,      0.0,     1.0   ]
         ], dtype=np.float64)
-    
-    def forward_kinematics(self, joint_angles: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-        'Compute Total forward Kinematics mapping by sequentially post-multiplying frames'
-        T_cum = np.eye(4, dtype=np.float64)
 
+    def forward_kinematics(
+        self,
+        joint_angles: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
+        """Compute the end-effector pose T_n^0 by sequentially post-multiplying DH frames.
+
+        Returns:
+            4x4 homogeneous transformation matrix mapping base frame to end-effector.
+        """
+        self._validate_joint_angles(joint_angles)
+        T = np.eye(4, dtype=np.float64)
         for i in range(self.num_joints):
-            q_i = joint_angles[i]
-            param = self.dh_param[i]
+            p = self.dh_params[i]
+            theta_i = joint_angles[i] + p.get('theta_offset', 0.0)
+            T = T @ DHTableSolver.compute_dh_matrix(theta_i, p['d'], p['a'], p['alpha'])
+        return T
 
-            theta_i = q_i + param.get('theta_offset', 0.0)
-            d_i = param['d']
-            a_i = param['a']
-            alpha_i = param['alpha']
+    def get_joint_positions(
+        self,
+        joint_angles: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
+        """Return Cartesian positions of all joint origins including base and end-effector.
 
-            T_local = DHTableSolver.compute_dh_matrix(theta_i, d_i, a_i, alpha_i)
-            T_cum = T_cum @ T_local
-
-        return T_cum
-    
-    def get_joint_positions(self, joint_angles: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        Returns:
+            Array of shape (num_joints + 1, 3) — [base, joint_1, ..., end_effector].
         """
-        Computes the intermediate 3D Cartesian coordinates of all joint centers.
-        Returns an array of shape (N+1, 3) representing [x, y, z] for:
-        [Base, Joint 1, Joint 2, End-Effector]
-        """
+        self._validate_joint_angles(joint_angles)
         positions = []
-        T_cum = np.eye(4, dtype=np.float64)
-        
-        # Base origin P_0 is always at [0, 0, 0]
-        positions.append(T_cum[0:3, 3])
-        
+        T = np.eye(4, dtype=np.float64)
+        positions.append(T[0:3, 3].copy())
         for i in range(self.num_joints):
-            q_i = joint_angles[i]
-            param = self.dh_param[i]
-            
-            theta_i = q_i + param.get('theta_offset', 0.0)
-            d_i = param['d']
-            a_i = param['a']
-            alpha_i = param['alpha']
-            
-            T_local = DHTableSolver.compute_dh_matrix(theta_i, d_i, a_i, alpha_i)
-            T_cum = T_cum @ T_local
-            
-            # Extract the current frame's origin position vector [x, y, z]
-            positions.append(T_cum[0:3, 3])
-            
+            p = self.dh_params[i]
+            theta_i = joint_angles[i] + p.get('theta_offset', 0.0)
+            T = T @ DHTableSolver.compute_dh_matrix(theta_i, p['d'], p['a'], p['alpha'])
+            positions.append(T[0:3, 3].copy())
         return np.array(positions, dtype=np.float64)
+
+    def get_all_transforms(
+        self,
+        joint_angles: npt.NDArray[np.float64]
+    ) -> List[npt.NDArray[np.float64]]:
+        """Return the full 4x4 transform at every frame, not just the positions.
+
+        Returns:
+            List of (num_joints + 1) arrays each of shape (4, 4):
+            [T_base, T_0^1, T_0^2, ..., T_0^n]
+        """
+        self._validate_joint_angles(joint_angles)
+        transforms = []
+        T = np.eye(4, dtype=np.float64)
+        transforms.append(T.copy())
+        for i in range(self.num_joints):
+            p = self.dh_params[i]
+            theta_i = joint_angles[i] + p.get('theta_offset', 0.0)
+            T = T @ DHTableSolver.compute_dh_matrix(theta_i, p['d'], p['a'], p['alpha'])
+            transforms.append(T.copy())
+        return transforms
+
+    def __repr__(self) -> str:
+        return f"DHTableSolver(num_joints={self.num_joints})"
