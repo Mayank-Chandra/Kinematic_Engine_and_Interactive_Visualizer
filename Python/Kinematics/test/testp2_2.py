@@ -17,7 +17,7 @@ target_pose = np.array([1.3837, 2.4319, np.radians(75.0)])
 q_guess = np.array([0.1, 0.1, 0.1])
 
 print("Running numerical tracking convergence loop...")
-q_sol, run_info = ik_engine.solver_planar_ik(target_pose, q_guess, alpha=0.1)
+q_sol, run_info = ik_engine.solver_planar_ik(target_pose, q_guess, alpha=0.5)
 
 print(f"\nSolver Status: {run_info['status']}")
 print(f"Iterations: {run_info['iterations']}")
