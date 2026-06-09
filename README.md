@@ -95,12 +95,18 @@ Kinematic_Engine_and_Interactive_Visualizer/
 |            |            |------ __init__.py
 |            |            |------ chain.py
 |            |            |------ transform.py
+|            |            |------ ik_solver.py
+|            |            |------ jacobian.py
+|            |            
 |            |
 |            |           
 |            |------ test
 |            |        |------ test1.py
 |            |        |------ test2.py
 |            |        |------ test3.py
+|            |        |------ testp2_1.py
+|            |        |------ testp2_2.py
+|            |        |------ testp2_3.py
 |            |
 |            |                
 |            |------ GUI_gif.py
